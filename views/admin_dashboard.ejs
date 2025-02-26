@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    
+    <style>
+        .modal-dialog {
+            max-width: 80%;
+        }
+
+        /* Maintain card size consistency */
+        .card {
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .card-body {
+            overflow: hidden;
+        }
+
+        /* Truncate subject and description */
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-text {
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Limit description to 2 lines */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Badge for days ago */
+        .created-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.85rem;
+            padding: 5px 8px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>Admin Dashboard - Manage Reminders</h2>
+
+        <!-- Flash Messages -->
+        <% if (messages.success) { %>
+            <div class="alert alert-success"><%= messages.success %></div>
+        <% } %>
+        <% if (messages.error) { %>
+            <div class="alert alert-danger"><%= messages.error %></div>
+        <% } %>
+
+        <!-- Reminders List -->
+        <div class="row">
+            <% if (reminders.length > 0) { %>
+                <% reminders.forEach(reminder => { %>
+                    <div class="col-md-4 mb-3">
+                        <div class="card shadow-lg">
+                            <!-- Created Days Ago Badge -->
+                            <span class="badge bg-primary created-badge">
+                                Created <%= reminder.daysAgo %> <%= reminder.daysAgo === 1 ? "day" : "days" %> ago
+                            </span>
+
+                            <div class="card-body">
+                                <h5 class="card-title" title="<%= reminder.subject %>"><%= reminder.subject %></h5>
+                                <p class="card-text"><%= reminder.description %></p>
+                                <p><strong>Status:</strong> <%= reminder.status %></p>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-secondary btn-sm open-modal" data-id="<%= reminder._id %>">Open</button>
+                                    
+                                    <form action="/delete/<%= reminder._id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this reminder?');">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p class="text-center text-muted">No reminders found.</p>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Reminder Modal -->
+    <div class="modal fade" id="reminderModal" tabindex="-1" aria-labelledby="reminderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reminderModalLabel">Reminder Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h5 id="modalSubject"></h5>
+                    <p id="modalDescription"></p>
+                    <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+
+                    <!-- Status Change Form -->
+                    <form id="statusForm">
+                        <input type="hidden" id="reminderId">
+                        <label for="statusSelect" class="form-label">Change Status:</label>
+                        <select id="statusSelect" class="form-select">
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary mt-2">Update Status</button>
+                    </form>
+
+                    <h6 class="mt-4">Notes:</h6>
+                    <ul id="notesList" class="list-group mb-3"></ul>
+
+                    <!-- Add Note Form -->
+                    <form id="addNoteForm">
+                        <input type="hidden" id="reminderId">
+                        <div class="mb-3">
+                            <label for="noteText" class="form-label">Add a Note:</label>
+                            <textarea id="noteText" class="form-control" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success">Add Note</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
